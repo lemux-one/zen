@@ -18,6 +18,20 @@ test(function consume_Test() {
   assertThrows(lexer.consume)
 })
 
+test(function consume_expectedMatchesTest() {
+  const lexer = new Lexer(new Stream('b'))
+  assertEquals(lexer.char, '')
+  lexer.consume('b')
+  assertEquals(lexer.char, 'b')
+})
+
+test(function consume_expectedDoesNotMatchTest() {
+  const lexer = new Lexer(new Stream('b'))
+  assertEquals(lexer.char, '')
+  assertThrows(() => lexer.consume('a'))
+  assertEquals(lexer.char, '')
+})
+
 test(function blank_whenSpaceTest() {
   const lexer = new Lexer(new Stream(' '))
   lexer.consume()
@@ -99,4 +113,28 @@ test(function num_floatWithUnderscoreTest() {
   const numToken = lexer.num()
   assertEquals(numToken.type, 'num')
   assertEquals(numToken.lexema, '1000000.5')
+})
+
+test(function next_nullWhenAllBlanksTest() {
+  const lexer = new Lexer(new Stream('  \t\n '))
+  assertEquals(lexer.stream.hasNext(), true)
+  assertEquals(lexer.next(), null)
+})
+
+test(function next_strTokenTest() {
+  const lexer = new Lexer(new Stream("'dummy'"))
+  assertEquals(lexer.stream.hasNext(), true)
+  const strToken = lexer.next()
+  assertEquals(strToken?.type, 'str')
+  assertEquals(strToken?.lexema, 'dummy')
+  assertEquals(lexer.next(), null)
+})
+
+test(function next_numTokenTest() {
+  const lexer = new Lexer(new Stream("0.5"))
+  assertEquals(lexer.stream.hasNext(), true)
+  const strToken = lexer.next()
+  assertEquals(strToken?.type, 'num')
+  assertEquals(strToken?.lexema, '0.5')
+  assertEquals(lexer.next(), null)
 })

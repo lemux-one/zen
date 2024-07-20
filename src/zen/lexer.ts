@@ -23,10 +23,9 @@ export class Lexer {
 
   next() {
     const next = this.stream.peek()
-    if (next) {
-      this.consume()
-      if (this.blank(next) && !this.lexema) this.skip()
-      if (this.char === "'") return this.str()
+    if (next !== null && next !== undefined) {
+      if (this.blank(next)) this.skip()
+      if (next === "'") return this.str()
       if (this.digit(next)) return this.num()
     }
     return null
@@ -87,7 +86,11 @@ export class Lexer {
   }
 
   skip() {
-    while (this.blank(this.char)) this.consume()
+    let next = this.stream.peek()
+    while (next !== null && next !== undefined && this.blank(next)) {
+      this.consume(next)
+      next = this.stream.peek()
+    }
   }
 
   takeLexema() {
