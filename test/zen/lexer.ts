@@ -1,15 +1,16 @@
 import { assertEquals, assertThrows } from '$std/assert/mod.ts'
 import { Lexer } from '../../src/zen/lexer.ts'
 import { Stream } from '../../src/zen/stream.ts'
+const { test } = Deno
 
-Deno.test(function constructor_simpleTest() {
+test(function constructor_simpleTest() {
   const lexer = new Lexer(new Stream('abc'))
   assertEquals(lexer.stream.src, 'abc')
   assertEquals(lexer.char, '')
   assertEquals(lexer.lexema, '')
 })
 
-Deno.test(function consume_Test() {
+test(function consume_Test() {
   const lexer = new Lexer(new Stream('a'))
   assertEquals(lexer.char, '')
   lexer.consume()
@@ -17,34 +18,66 @@ Deno.test(function consume_Test() {
   assertThrows(lexer.consume)
 })
 
-Deno.test(function isBlank_whenSpaceTest() {
+test(function blank_whenSpaceTest() {
   const lexer = new Lexer(new Stream(' '))
   lexer.consume()
-  assertEquals(lexer.isBlank(), true)
+  assertEquals(lexer.blank(lexer.char), true)
 })
 
-Deno.test(function isBlank_whenTabTest() {
+test(function blank_whenTabTest() {
   const lexer = new Lexer(new Stream('\t'))
   lexer.consume()
-  assertEquals(lexer.isBlank(), true)
+  assertEquals(lexer.blank(lexer.char), true)
 })
 
-Deno.test(function isBlank_whenLineFeedTest() {
+test(function blank_whenLineFeedTest() {
   const lexer = new Lexer(new Stream('\n'))
   lexer.consume()
-  assertEquals(lexer.isBlank(), true)
+  assertEquals(lexer.blank(lexer.char), true)
 })
 
-Deno.test(function skip_whenSingleBlankTest() {
+test(function skip_whenSingleBlankTest() {
   const lexer = new Lexer(new Stream('\n;'))
   lexer.consume()
   lexer.skip()
   assertEquals(lexer.char, ';')
 })
 
-Deno.test(function skip_whenMultipleBlanksTest() {
+test(function skip_whenMultipleBlanksTest() {
   const lexer = new Lexer(new Stream('  \t\t\n\n;'))
   lexer.consume()
   lexer.skip()
   assertEquals(lexer.char, ';')
+})
+
+test(function str_simpleTest() {
+  const stream = new Stream("'abc'")
+  const lexer = new Lexer(stream)
+  const strToken = lexer.str()
+  assertEquals(strToken.type, 'str')
+  assertEquals(strToken.lexema, 'abc')
+})
+
+test(function str_emptyTest() {
+  const stream = new Stream("''")
+  const lexer = new Lexer(stream)
+  const strToken = lexer.str()
+  assertEquals(strToken.type, 'str')
+  assertEquals(strToken.lexema, '')
+})
+
+test(function takeLexema_simpleTest() {
+  const lexer = new Lexer(new Stream(''))
+  assertEquals(lexer.lexema, '')
+  lexer.lexema = 'dummy'
+  const taken = lexer.takeLexema()
+  assertEquals(taken, 'dummy')
+  assertEquals(lexer.lexema, '')
+})
+
+test(function num_integerTest() {
+  const lexer = new Lexer(new Stream('165'))
+  const numToken = lexer.num()
+  assertEquals(numToken.type, 'num')
+  assertEquals(numToken.lexema, '165')
 })
