@@ -34,13 +34,23 @@ export class Lexer {
 
   num() {
     this.lexema = ''
+    let float = false
     let next = this.stream.peek()
-    while(next && this.digit(next)) {
+    while (next && (this.digit(next) || this.sym(next, '.') || this.sym(next, '_'))) {
       this.consume()
-      this.lexema += this.char
+      if (this.sym(this.char, '.')) {
+        if (float) this.err('Numbers can have only one period (".").')
+        float = true
+      }
+      if (!this.sym(this.char, '_')) this.lexema += this.char
       next = this.stream.peek()
     }
     return new Token('num', this.takeLexema())
+  }
+
+  sym(char: string, expected?: string) {
+    if (expected) return char === expected
+    return '._;:[]{}()'.includes(char)
   }
 
   digit(char: string) {
@@ -63,11 +73,11 @@ export class Lexer {
 
   consume(expected?: string) {
     if (!this.stream.hasNext()) {
-      throw new Error(`ERR::Lexer: Unable to consume, stream ended early.`)
+      this.err('Unable to consume, stream ended early.')
     }
     const next = this.stream.next()
     if (expected && next !== expected) {
-      throw new Error(`ERR::Lexer: Expected "${expected}", found "${next}".`)
+      this.err(`Expected "${expected}", found "${next}".`)
     }
     this.char = next ?? ''
   }
@@ -84,5 +94,9 @@ export class Lexer {
     const current = this.lexema
     this.lexema = ''
     return current
+  }
+
+  err(details = 'Parsing failure.') {
+    throw new Error(`ERR::Lexer: ${details}`)
   }
 }

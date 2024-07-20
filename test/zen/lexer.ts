@@ -81,3 +81,22 @@ test(function num_integerTest() {
   assertEquals(numToken.type, 'num')
   assertEquals(numToken.lexema, '165')
 })
+
+test(function num_floatTest() {
+  const lexer = new Lexer(new Stream('1.5'))
+  const numToken = lexer.num()
+  assertEquals(numToken.type, 'num')
+  assertEquals(numToken.lexema, '1.5')
+})
+
+test(function num_floatWithMultiplePeriodsTest() {
+  const lexer = new Lexer(new Stream('1..5'))
+  assertThrows(lexer.num)
+})
+
+test(function num_floatWithUnderscoreTest() {
+  const lexer = new Lexer(new Stream('1_000_000.5'))
+  const numToken = lexer.num()
+  assertEquals(numToken.type, 'num')
+  assertEquals(numToken.lexema, '1000000.5')
+})
