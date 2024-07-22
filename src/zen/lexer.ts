@@ -1,14 +1,5 @@
 import { Stream } from './stream.ts'
-
-export class Token {
-  type: string
-  lexema?: string
-
-  constructor(type: string, lexema?: string) {
-    this.type = type
-    this.lexema = lexema
-  }
-}
+import { Token, TokenType } from './token.ts'
 
 export class Lexer {
   stream: Stream
@@ -27,29 +18,61 @@ export class Lexer {
       if (this.blank(next)) this.skip()
       if (next === "'") return this.str()
       if (this.digit(next)) return this.num()
+      if (this.special(next)) return this.sym()
     }
     return null
   }
 
+  sym() {
+    this.consume()
+    switch (this.char) {
+      case '(':
+        return new Token(TokenType.L_PAR)
+      case ')':
+        return new Token(TokenType.R_PAR)
+      case '[':
+        return new Token(TokenType.L_BKT)
+      case ']':
+        return new Token(TokenType.R_BKT)
+      case '{':
+        return new Token(TokenType.L_BRA)
+      case '}':
+        return new Token(TokenType.R_BRA)
+      case ';':
+        return new Token(TokenType.SEMI)
+      case ':':
+        return new Token(TokenType.COLON)
+      case '_':
+        return new Token(TokenType.UNDER)
+      case '.':
+        return new Token(TokenType.DOT)
+      case ',':
+        return new Token(TokenType.COMA)
+      case '/':
+        return new Token(TokenType.SLASH)
+      default:
+        this.err('Unreachable code.')
+    }
+  }
+
   num() {
-    this.lexema = ''
     let float = false
     let next = this.stream.peek()
-    while (next && (this.digit(next) || this.sym(next, '.') || this.sym(next, '_'))) {
+    while (next && (this.digit(next) || this.special(next, '.') || this.special(next, '_'))) {
       this.consume()
-      if (this.sym(this.char, '.')) {
+      if (this.special(this.char, '.')) {
         if (float) this.err('Numbers can have only one period (".").')
         float = true
       }
-      if (!this.sym(this.char, '_')) this.lexema += this.char
+      if (!this.special(this.char, '_')) this.lexema += this.char
       next = this.stream.peek()
     }
-    return new Token('num', this.takeLexema())
+    return new Token(TokenType.NUMBER, this.takeLexema())
   }
 
-  sym(char: string, expected?: string) {
+  special(char: string, expected?: string) {
     if (expected) return char === expected
-    return '._;:[]{}()'.includes(char)
+    return ',._;:/[]{}()'.includes(char)
   }
 
   digit(char: string) {
@@ -60,14 +83,14 @@ export class Lexer {
     this.consume("'") // eat the initial quote
     if (this.stream.peek() === "'") {
       this.consume("'")
-      return new Token('str', '')
+      return new Token(TokenType.STRING, '')
     }
     this.consume() // advance to actual first char
     while (this.char !== "'") {
       this.lexema += this.char
       this.consume()
     }
-    return new Token('str', this.takeLexema())
+    return new Token(TokenType.STRING, this.takeLexema())
   }
 
   consume(expected?: string) {
