@@ -132,7 +132,7 @@ test(function next_strTokenTest() {
 })
 
 test(function next_numTokenTest() {
-  const lexer = new Lexer(new Stream("0.5"))
+  const lexer = new Lexer(new Stream('0.5'))
   assertEquals(lexer.stream.hasNext(), true)
   const strToken = lexer.next()
   assertEquals(strToken?.type, TokenType.NUMBER)
@@ -152,12 +152,41 @@ test(function sym_openClosePairsTest() {
 })
 
 test(function sym_singlesTest() {
-  const lexer = new Lexer(new Stream(',._;:/'))
+  const lexer = new Lexer(new Stream(',._;:/|'))
   assertEquals(lexer.next()?.type, TokenType.COMA)
   assertEquals(lexer.next()?.type, TokenType.DOT)
   assertEquals(lexer.next()?.type, TokenType.UNDER)
   assertEquals(lexer.next()?.type, TokenType.SEMI)
   assertEquals(lexer.next()?.type, TokenType.COLON)
   assertEquals(lexer.next()?.type, TokenType.SLASH)
+  assertEquals(lexer.next()?.type, TokenType.BAR)
+  assertEquals(lexer.next(), null)
+})
+
+test(function term_simpleTest() {
+  const lexer = new Lexer(new Stream('Array new'))
+  let term = lexer.next()
+  assertEquals(term?.type, TokenType.TERM)
+  assertEquals(term?.lexema, 'Array')
+  term = lexer.next()
+  assertEquals(term?.type, TokenType.TERM)
+  assertEquals(term?.lexema, 'new')
+})
+
+test(function parse_simpleTest() {
+  const lexer = new Lexer(new Stream("Console print: 'Hello';"))
+  let next = lexer.next()
+  assertEquals(next?.type, TokenType.TERM)
+  assertEquals(next?.lexema, 'Console')
+  next = lexer.next()
+  assertEquals(next?.type, TokenType.TERM)
+  assertEquals(next?.lexema, 'print')
+  next = lexer.next()
+  assertEquals(next?.type, TokenType.COLON)
+  next = lexer.next()
+  assertEquals(next?.type, TokenType.STRING)
+  assertEquals(next?.lexema, 'Hello')
+  next = lexer.next()
+  assertEquals(next?.type, TokenType.SEMI)
   assertEquals(lexer.next(), null)
 })

@@ -13,14 +13,29 @@ export class Lexer {
   }
 
   next() {
-    const next = this.stream.peek()
+    let next = this.stream.peek()
     if (next !== null && next !== undefined) {
-      if (this.blank(next)) this.skip()
+      if (this.blank(next)) {
+        this.skip()
+        next = this.stream.peek()
+        if (next === null || next === undefined) return null
+      }
       if (next === "'") return this.str()
       if (this.digit(next)) return this.num()
       if (this.special(next)) return this.sym()
+      return this.term()
     }
     return null
+  }
+
+  term() {
+    let next = this.stream.peek() ?? ''
+    while (next && !this.blank(next) && !'()[]{}:,|'.includes(next)) {
+      this.consume()
+      this.lexema += this.char
+      next = this.stream.peek() ?? ''
+    }
+    return new Token(TokenType.TERM, this.takeLexema())
   }
 
   sym() {
@@ -50,6 +65,8 @@ export class Lexer {
         return new Token(TokenType.COMA)
       case '/':
         return new Token(TokenType.SLASH)
+      case '|':
+        return new Token(TokenType.BAR)
       default:
         this.err('Unreachable code.')
     }
@@ -72,7 +89,7 @@ export class Lexer {
 
   special(char: string, expected?: string) {
     if (expected) return char === expected
-    return ',._;:/[]{}()'.includes(char)
+    return ',._;:/[]{}()|'.includes(char)
   }
 
   digit(char: string) {
