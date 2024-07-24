@@ -173,7 +173,7 @@ test(function term_simpleTest() {
   assertEquals(term?.lexema, 'new')
 })
 
-test(function parse_simpleTest() {
+test(function scan_simpleTest() {
   const lexer = new Lexer(new Stream("Console print: 'Hello';"))
   let next = lexer.next()
   assertEquals(next?.type, TokenType.TERM)
