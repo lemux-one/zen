@@ -139,7 +139,7 @@ export class Lexer {
     return current
   }
 
-  err(details = 'Parsing failure.') {
+  err(details = 'Scanning failure.') {
     throw new Error(`ERR::Lexer: ${details}`)
   }
 }
