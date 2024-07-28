@@ -3,14 +3,6 @@
 
 An experimental programming language inspired by Smalltalk.
 
-## Hello World example in Zen
-
-```Zen
-zen/rt/Runtime exec: (Function new: (
-  zen/io/Console print: (String new: 'Hello, Zen!');
-));
-```
-
 ## Guidelines
 
 1. Message passing as the fundamental construct.
