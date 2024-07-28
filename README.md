@@ -6,20 +6,9 @@ An experimental programming language inspired by Smalltalk.
 ## Hello World example in Zen
 
 ```Zen
-'Importing from vendor zen'
-Console from: 'zen/io'
-Runtime from: 'zen/rt'
-
-'Storing a block literal as a callable object'
-greet =: [name|
-  'Returns a greeting message given a name'
-  * =: 'Hello, ${}!' $: name
-]
-
-'Execution entry point'
-Runtime exec: [
-  Console print: (greet call: 'Zen')
-]
+zen/rt/Runtime exec: (Function new: (
+  zen/io/Console print: (String new: 'Hello, Zen!');
+));
 ```
 
 ## Guidelines
